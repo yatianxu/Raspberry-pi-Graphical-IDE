@@ -198,6 +198,7 @@ export default function BlocklyEditor({ onCodeChange }) {
                 scaleSpeed: 1.1,
             },
             trashcan: true,
+            sounds: false,
             move: {
                 scrollbars: { horizontal: true, vertical: true },
                 drag: true,

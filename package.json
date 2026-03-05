@@ -1,15 +1,20 @@
 {
-  "name": "robexide",
+  "name": "raspberry-pi-ide",
   "private": true,
-  "version": "0.1.0",
-  "type": "module",
-  "description": "RobEx IDE is a cross-platform IDE for RobEx, a smart robot platform.",
-  "author": "Qiuxin Education Tech Ltd",
+  "version": "0.2.0",
+  "description": "Raspberry Pi IDE — Windows下树莓派5图形化编程软件，基于 Blockly + React + Electron，支持 gpiozero / RPi.GPIO / WS2812 灯带等原生库，通过 SSH 上传并运行 Python 代码。",
+  "author": "Raspberry Pi IDE Contributors",
+  "license": "GPL-3.0-only",
   "main": "electron/main.cjs",
+  "type": "commonjs",
   "scripts": {
-    "start": "electron .",
-    "dev": "electron .",
-    "build": "electron-builder"
+    "dev": "concurrently -k \"npm run vite\" \"npm run electron:start\"",
+    "vite": "vite",
+    "electron:start": "wait-on http://localhost:5173 && electron .",
+    "build": "vite build",
+    "preview": "vite preview",
+    "pack": "npm run build && electron-builder --win --config",
+    "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
     "@codemirror/lang-python": "^6.2.0",
@@ -19,11 +24,57 @@
     "blockly": "^10.4.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-markdown": "^9.0.1",
+    "react-markdown": "^9.1.0",
     "ssh2": "^1.17.0"
   },
   "devDependencies": {
-    "electron": "^40.6.1",
-    "electron-builder": "^25.1.7"
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "electron": "^33.3.1",
+    "electron-builder": "^25.1.8",
+    "vite": "^6.1.0",
+    "wait-on": "^8.0.2"
+  },
+  "build": {
+    "appId": "com.raspberry-pi-ide",
+    "productName": "Raspberry Pi IDE",
+    "copyright": "Copyright © 2026 Raspberry Pi IDE Contributors",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**",
+      "electron/**",
+      "package.json"
+    ],
+    "asar": true,
+    "extraResources": [
+      {
+        "from": "electron/assets",
+        "to": "assets"
+      }
+    ],
+    "win": {
+      "icon": "dist/images/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "Raspberry Pi IDE",
+      "createDesktopShortcut": true,
+      "installerIcon": "dist/images/icon.ico",
+      "uninstallerIcon": "dist/images/icon.ico"
+    }
   }
 }

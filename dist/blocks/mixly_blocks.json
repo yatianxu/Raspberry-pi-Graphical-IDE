@@ -1,0 +1,1419 @@
+{
+  "name": "RobEx教育机器人",
+  "description": "RobEx教育机器人图形化编程块定义",
+  "version": "2.1.0",
+  "categories": [
+    {
+      "name": "系统",
+      "color": "#5C81A6",
+      "blocks": [
+        {
+          "type": "robex_init",
+          "message": "初始化RobEx",
+          "code": "robex.init()"
+        },
+        {
+          "type": "robex_get_info",
+          "message": "板载信息",
+          "output": "dict",
+          "code": "robex.get_board_capabilities()"
+        },
+        {
+          "type": "time_sleep",
+          "message": "延时 %1 秒",
+          "args": [
+            { "type": "input_value", "name": "SEC", "check": "Number" }
+          ],
+          "code": "time.sleep(%SEC%)"
+        },
+        {
+          "type": "time_sleep_ms",
+          "message": "延时 %1 毫秒",
+          "args": [
+            { "type": "input_value", "name": "MS", "check": "Number" }
+          ],
+          "code": "time.sleep_ms(int(%MS%))"
+        }
+      ]
+    },
+    {
+      "name": "舵机",
+      "color": "#5CA65C",
+      "blocks": [
+        {
+          "type": "servo_init",
+          "message": "舵机 %1",
+          "args": [
+            {
+              "type": "field_dropdown",
+              "name": "CH",
+              "options": [
+                ["S0", "0"],
+                ["S1", "1"],
+                ["S2", "2"],
+                ["S3", "3"]
+              ]
+            }
+          ],
+          "output": "Object",
+          "code": "robex.Servo(%CH%)"
+        },
+        {
+          "type": "servo_init_mode",
+          "message": "舵机 %1 模式 %2",
+          "args": [
+            {
+              "type": "field_dropdown",
+              "name": "CH",
+              "options": [
+                ["S0", "0"],
+                ["S1", "1"],
+                ["S2", "2"],
+                ["S3", "3"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "MODE",
+              "options": [
+                ["角度180", "angle180"],
+                ["角度360", "angle360"],
+                ["连续", "continuous"]
+              ]
+            }
+          ],
+          "output": "Object",
+          "code": "robex.Servo(%CH%, mode=\"%MODE%\")"
+        },
+        {
+          "type": "servo_set_angle",
+          "message": "设置舵机 %1 角度 %2",
+          "args": [
+            { "type": "input_value", "name": "SERVO", "check": "Object" },
+            { "type": "input_value", "name": "ANGLE", "check": "Number" }
+          ],
+          "code": "%SERVO%.angle(%ANGLE%)"
+        },
+        {
+          "type": "servo_set_speed",
+          "message": "连续舵机 %1 速度 %2",
+          "args": [
+            { "type": "input_value", "name": "SERVO", "check": "Object" },
+            { "type": "input_value", "name": "SPEED", "check": "Number" }
+          ],
+          "code": "%SERVO%.speed(%SPEED%)"
+        },
+        {
+          "type": "servo_set_mode",
+          "message": "舵机 %1 模式 %2",
+          "args": [
+            { "type": "input_value", "name": "SERVO", "check": "Object" },
+            {
+              "type": "field_dropdown",
+              "name": "MODE",
+              "options": [
+                ["角度180", "angle180"],
+                ["角度360", "angle360"]
+              ]
+            }
+          ],
+          "code": "%SERVO%.set_mode(\"%MODE%\")"
+        },
+        {
+          "type": "servo_read",
+          "message": "舵机 %1 角度",
+          "args": [{ "type": "input_value", "name": "SERVO", "check": "Object" }],
+          "output": "Number",
+          "code": "%SERVO%.angle()"
+        },
+        {
+          "type": "servo_release",
+          "message": "舵机 %1 释放",
+          "args": [{ "type": "input_value", "name": "SERVO", "check": "Object" }],
+          "code": "%SERVO%.release()"
+        }
+      ]
+    },
+    {
+      "name": "电机",
+      "color": "#5C68A6",
+      "blocks": [
+        {
+          "type": "motor_init",
+          "message": "电机 %1",
+          "args": [
+            {
+              "type": "field_dropdown",
+              "name": "CH",
+              "options": [
+                ["M0", "0"],
+                ["M1", "1"],
+                ["M2", "2"],
+                ["M3", "3"]
+              ]
+            }
+          ],
+          "output": "Object",
+          "code": "robex.Motor(%CH%)"
+        },
+        {
+          "type": "motor_duty",
+          "message": "设置电机 %1 占空比(%) %2 方向 %3",
+          "args": [
+            { "type": "input_value", "name": "MOTOR", "check": "Object" },
+            { "type": "input_value", "name": "SPEED", "check": "Number" },
+            {
+              "type": "field_dropdown",
+              "name": "DIR",
+              "options": [
+                ["正转", "1"],
+                ["反转", "-1"]
+              ]
+            }
+          ],
+          "code": "%MOTOR%.duty(int((%SPEED% * %DIR%) * 10))"
+        },
+        {
+          "type": "motor_velocity",
+          "message": "设置电机 %1 转速 %2 方向 %3",
+          "args": [
+            { "type": "input_value", "name": "MOTOR", "check": "Object" },
+            { "type": "input_value", "name": "RPM", "check": "Number" },
+            {
+              "type": "field_dropdown",
+              "name": "DIR",
+              "options": [
+                ["正转", "1"],
+                ["反转", "-1"]
+              ]
+            }
+          ],
+          "code": "%MOTOR%.velocity(%RPM% * %DIR%)"
+        },
+        {
+          "type": "motor_position",
+          "message": "设置电机 %1 位置 %2 限速 %3",
+          "args": [
+            { "type": "input_value", "name": "MOTOR", "check": "Object" },
+            { "type": "input_value", "name": "POS", "check": "Number" },
+            { "type": "input_value", "name": "SPEED", "check": "Number" }
+          ],
+          "code": "%MOTOR%.position(%POS%, speed=int(%SPEED% * 10))"
+        },
+        {
+          "type": "motor_config_pid",
+          "message": "设置电机 %1 PID P%2 I%3 D%4",
+          "args": [
+            { "type": "input_value", "name": "MOTOR", "check": "Object" },
+            { "type": "input_value", "name": "KP", "check": "Number" },
+            { "type": "input_value", "name": "KI", "check": "Number" },
+            { "type": "input_value", "name": "KD", "check": "Number" }
+          ],
+          "code": "%MOTOR%.config_pid(%KP%, %KI%, %KD%)"
+        },
+        {
+          "type": "motor_stop",
+          "message": "电机 %1 停止(滑行)",
+          "args": [{ "type": "input_value", "name": "MOTOR", "check": "Object" }],
+          "code": "%MOTOR%.stop()"
+        },
+        {
+          "type": "motor_brake",
+          "message": "电机 %1 刹车",
+          "args": [{ "type": "input_value", "name": "MOTOR", "check": "Object" }],
+          "code": "%MOTOR%.brake()"
+        }
+      ]
+    },
+    {
+      "name": "传感器",
+      "color": "#A6745C",
+      "blocks": [
+        {
+          "type": "robex_pin_init",
+          "message": "初始化引脚 %1 模式 %2",
+          "args": [
+            {
+              "type": "field_dropdown",
+              "name": "PIN",
+              "options": [
+                ["G0", "\"G0\""], ["G1", "\"G1\""], ["G2", "\"G2\""], ["G3", "\"G3\""],
+                ["G4", "\"G4\""], ["G5", "\"G5\""], ["G6", "\"G6\""], ["G7", "\"G7\""], ["G8", "\"G8\""],
+                ["SW1", "\"SW1\""], ["SW2", "\"SW2\""], ["LED1", "\"LED1\""], ["LED2", "\"LED2\""]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "MODE",
+              "options": [
+                ["输入", "robex.Pin.IN"],
+                ["输出", "robex.Pin.OUT"]
+              ]
+            }
+          ],
+          "output": "Object",
+          "code": "robex.Pin(%PIN%, %MODE%)"
+        },
+        {
+          "type": "robex_adc_init",
+          "message": "初始化ADC %1",
+          "args": [
+            {
+              "type": "field_dropdown",
+              "name": "PIN",
+              "options": [
+                ["G0", "\"G0\""], ["G1", "\"G1\""], ["G2", "\"G2\""], ["G3", "\"G3\""]
+              ]
+            }
+          ],
+          "output": "Object",
+          "code": "robex.ADC(%PIN%)"
+        },
+        {
+          "type": "sensor_ultrasonic_init",
+          "message": "超声波 %1",
+          "args": [
+            {
+              "type": "field_dropdown",
+              "name": "PIN",
+              "options": [
+                ["G0", "\"G0\""],
+                ["G1", "\"G1\""],
+                ["G2", "\"G2\""],
+                ["G3", "\"G3\""],
+                ["G4", "\"G4\""],
+                ["G5", "\"G5\""],
+                ["G6", "\"G6\""],
+                ["G7", "\"G7\""],
+                ["G8", "\"G8\""]
+              ]
+            }
+          ],
+          "output": "Object",
+          "code": "robex.Ultrasonic(%PIN%)"
+        },
+        {
+          "type": "sensor_ultrasonic_read",
+          "message": "超声波 %1 距离",
+          "args": [{ "type": "input_value", "name": "SENSOR", "check": "Object" }],
+          "output": "Number",
+          "code": "%SENSOR%.distance_cm()"
+        },
+        {
+          "type": "sensor_pin_init",
+          "message": "GPIO %1 %2",
+          "args": [
+            {
+              "type": "field_dropdown",
+              "name": "PIN",
+              "options": [
+                ["G0", "\"G0\""],
+                ["G1", "\"G1\""],
+                ["G2", "\"G2\""],
+                ["G3", "\"G3\""],
+                ["G4", "\"G4\""],
+                ["G5", "\"G5\""],
+                ["G6", "\"G6\""],
+                ["G7", "\"G7\""],
+                ["G8", "\"G8\""]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "MODE",
+              "options": [
+                ["输入", "IN"],
+                ["输出", "OUT"]
+              ]
+            }
+          ],
+          "output": "Object",
+          "code": "robex.Pin(%PIN%, robex.Pin.%MODE%)"
+        },
+        {
+          "type": "sensor_pin_read",
+          "message": "读 GPIO %1",
+          "args": [{ "type": "input_value", "name": "PIN", "check": "Object" }],
+          "output": "Number",
+          "code": "%PIN%.value()"
+        },
+        {
+          "type": "sensor_pin_write",
+          "message": "写 GPIO %1 值 %2",
+          "args": [
+            { "type": "input_value", "name": "PIN", "check": "Object" },
+            {
+              "type": "field_dropdown",
+              "name": "VAL",
+              "options": [
+                ["低", "0"],
+                ["高", "1"]
+              ]
+            }
+          ],
+          "code": "%PIN%.value(%VAL%)"
+        },
+        {
+          "type": "sensor_pwm_init",
+          "message": "PWM %1",
+          "args": [
+            {
+              "type": "field_dropdown",
+              "name": "PIN",
+              "options": [
+                ["G0", "\"G0\""],
+                ["G1", "\"G1\""],
+                ["G2", "\"G2\""],
+                ["G3", "\"G3\""],
+                ["G4", "\"G4\""],
+                ["G5", "\"G5\""],
+                ["G6", "\"G6\""],
+                ["G7", "\"G7\""],
+                ["G8", "\"G8\""]
+              ]
+            }
+          ],
+          "output": "Object",
+          "code": "robex.PWM(%PIN%)"
+        },
+        {
+          "type": "sensor_pwm_set",
+          "message": "设置 PWM %1 占空比(%) %2",
+          "args": [
+            { "type": "input_value", "name": "PWM", "check": "Object" },
+            { "type": "input_value", "name": "DUTY", "check": "Number" }
+          ],
+          "code": "%PWM%.duty(%DUTY%)"
+        },
+        {
+          "type": "sensor_pwm_deinit",
+          "message": "PWM %1 停止",
+          "args": [{ "type": "input_value", "name": "PWM", "check": "Object" }],
+          "code": "%PWM%.deinit()"
+        },
+        {
+          "type": "sensor_adc_init",
+          "message": "ADC %1",
+          "args": [
+            {
+              "type": "field_dropdown",
+              "name": "PIN",
+              "options": [
+                ["G0", "\"G0\""],
+                ["G1", "\"G1\""],
+                ["G2", "\"G2\""],
+                ["G3", "\"G3\""]
+              ]
+            }
+          ],
+          "output": "Object",
+          "code": "robex.ADC(%PIN%)"
+        },
+        {
+          "type": "sensor_adc_read",
+          "message": "读 ADC %1",
+          "args": [{ "type": "input_value", "name": "ADC", "check": "Object" }],
+          "output": "Number",
+          "code": "%ADC%.read()"
+        }
+      ]
+    },
+    {
+      "name": "LED灯带",
+      "color": "#A65C81",
+      "blocks": [
+        {
+          "type": "led_strip_create",
+          "message": "创建LED灯带 %1 数量 %2",
+          "args": [
+            {
+              "type": "field_dropdown",
+              "name": "PIN",
+              "options": [
+                ["G0", "0"],
+                ["G1", "1"],
+                ["G2", "2"],
+                ["G3", "3"],
+                ["G4", "4"],
+                ["G5", "5"],
+                ["G6", "6"],
+                ["G7", "7"],
+                ["G8", "8"]
+              ]
+            },
+            { "type": "input_value", "name": "COUNT", "check": "Number" }
+          ],
+          "output": "Object",
+          "code": "robex.NeoPixel(%PIN%, %COUNT%)"
+        },
+        {
+          "type": "led_color_rgb",
+          "message": "颜色 R %1 G %2 B %3",
+          "args": [
+            { "type": "input_value", "name": "R", "check": "Number" },
+            { "type": "input_value", "name": "G", "check": "Number" },
+            { "type": "input_value", "name": "B", "check": "Number" }
+          ],
+          "output": "Array",
+          "code": "(%R%, %G%, %B%)"
+        },
+        {
+          "type": "led_color_picker",
+          "message": "颜色 %1",
+          "args": [
+            { "type": "field_colour", "name": "COLOR", "colour": "#ff0000" }
+          ],
+          "output": "Array",
+          "code": "(int(%COLOR%[1:3],16), int(%COLOR%[3:5],16), int(%COLOR%[5:7],16))"
+        },
+        {
+          "type": "led_set_pixel_obj",
+          "message": "LED灯带 %1 设置第 %2 个灯 颜色 %3",
+          "args": [
+            { "type": "input_value", "name": "STRIP", "check": "Object" },
+            { "type": "input_value", "name": "INDEX", "check": "Number" },
+            { "type": "input_value", "name": "COLOR", "check": "Array" }
+          ],
+          "code": "%STRIP%.set_pixel(%INDEX%, *%COLOR%)"
+        },
+        {
+          "type": "led_set_range",
+          "message": "LED灯带 %1 设置从 %2 到 %3 颜色 %4",
+          "args": [
+            { "type": "input_value", "name": "STRIP", "check": "Object" },
+            { "type": "input_value", "name": "START", "check": "Number" },
+            { "type": "input_value", "name": "END", "check": "Number" },
+            { "type": "input_value", "name": "COLOR", "check": "Array" }
+          ],
+          "code": "%STRIP%.set_range(%START%, %END%, *%COLOR%)"
+        },
+        {
+          "type": "led_set_all",
+          "message": "LED灯带 %1 设置全部 颜色 %2",
+          "args": [
+            { "type": "input_value", "name": "STRIP", "check": "Object" },
+            { "type": "input_value", "name": "COLOR", "check": "Array" }
+          ],
+          "code": "%STRIP%.set_all(*%COLOR%)"
+        },
+        {
+          "type": "led_off_pixel",
+          "message": "LED灯带 %1 熄灭第 %2 个灯",
+          "args": [
+            { "type": "input_value", "name": "STRIP", "check": "Object" },
+            { "type": "input_value", "name": "INDEX", "check": "Number" }
+          ],
+          "code": "%STRIP%.off_pixel(%INDEX%)"
+        },
+        {
+          "type": "led_off_range",
+          "message": "LED灯带 %1 熄灭从 %2 到 %3",
+          "args": [
+            { "type": "input_value", "name": "STRIP", "check": "Object" },
+            { "type": "input_value", "name": "START", "check": "Number" },
+            { "type": "input_value", "name": "END", "check": "Number" }
+          ],
+          "code": "%STRIP%.off_range(%START%, %END%)"
+        },
+        {
+          "type": "led_clear",
+          "message": "LED灯带 %1 全部熄灭",
+          "args": [
+            { "type": "input_value", "name": "STRIP", "check": "Object" }
+          ],
+          "code": "%STRIP%.clear()"
+        },
+        {
+          "type": "led_show_obj",
+          "message": "LED灯带 %1 刷新显示",
+          "args": [
+            { "type": "input_value", "name": "STRIP", "check": "Object" }
+          ],
+          "code": "%STRIP%.show()"
+        },
+        {
+          "type": "led_rainbow",
+          "message": "LED灯带 %1 显示彩虹 偏移 %2",
+          "args": [
+            { "type": "input_value", "name": "STRIP", "check": "Object" },
+            { "type": "input_value", "name": "OFFSET", "check": "Number" }
+          ],
+          "code": "%STRIP%.rainbow(%OFFSET%)"
+        },
+        {
+          "type": "led_breathing",
+          "message": "LED灯带 %1 呼吸灯效果 颜色 %2 速度 %3 循环次数 %4",
+          "args": [
+            { "type": "input_value", "name": "STRIP", "check": "Object" },
+            { "type": "input_value", "name": "COLOR", "check": "Array" },
+            { "type": "input_value", "name": "SPEED", "check": "Number" },
+            { "type": "input_value", "name": "CYCLES", "check": "Number" }
+          ],
+          "code": "%STRIP%.breathing(%COLOR%, %SPEED%, %CYCLES%)"
+        },
+        {
+          "type": "led_chase",
+          "message": "LED灯带 %1 跑马灯效果 颜色 %2 速度 %3 圈数 %4",
+          "args": [
+            { "type": "input_value", "name": "STRIP", "check": "Object" },
+            { "type": "input_value", "name": "COLOR", "check": "Array" },
+            { "type": "input_value", "name": "SPEED", "check": "Number" },
+            { "type": "input_value", "name": "ROUNDS", "check": "Number" }
+          ],
+          "code": "%STRIP%.chase(%COLOR%, %SPEED%, %ROUNDS%)"
+        },
+        {
+          "type": "led_init",
+          "message": "初始化LED灯带(全局) %1 数量 %2",
+          "args": [
+            {
+              "type": "field_dropdown",
+              "name": "PIN",
+              "options": [
+                ["G0", "0"],
+                ["G1", "1"],
+                ["G2", "2"],
+                ["G3", "3"],
+                ["G4", "4"],
+                ["G5", "5"],
+                ["G6", "6"],
+                ["G7", "7"],
+                ["G8", "8"]
+              ]
+            },
+            { "type": "input_value", "name": "COUNT", "check": "Number" }
+          ],
+          "code": "robex.led.init(%PIN%, %COUNT%)"
+        },
+        {
+          "type": "led_set_pixel",
+          "message": "设置LED(全局) 第 %1 个灯 颜色 %2",
+          "args": [
+            { "type": "input_value", "name": "INDEX", "check": "Number" },
+            { "type": "input_value", "name": "COLOR", "check": "Array" }
+          ],
+          "code": "robex.led.set_pixel(%INDEX%, *%COLOR%)"
+        },
+        {
+          "type": "led_set_all_global",
+          "message": "设置全部LED(全局) 颜色 %1",
+          "args": [
+            { "type": "input_value", "name": "COLOR", "check": "Array" }
+          ],
+          "code": "robex.led.set_all(*%COLOR%)"
+        },
+        {
+          "type": "led_show",
+          "message": "刷新LED显示(全局)",
+          "code": "robex.led.show()"
+        },
+        {
+          "type": "led_clear_global",
+          "message": "清除所有LED(全局)",
+          "code": "robex.led.clear()"
+        },
+        {
+          "type": "led_set_pixel_oldstyle",
+          "message": "LED %1 颜色 %2",
+          "args": [
+            { "type": "input_value", "name": "INDEX", "check": "Number" },
+            { "type": "field_colour", "name": "COLOR", "colour": "#ff0000" }
+          ],
+          "code": "robex.led.set_pixel(%INDEX%, int(%COLOR%[1:3],16), int(%COLOR%[3:5],16), int(%COLOR%[5:7],16))"
+        }
+      ]
+    },
+    {
+      "name": "相机/屏幕",
+      "color": "#81A65C",
+      "blocks": [
+        {
+          "type": "maix_camera_init",
+          "message": "摄像头 %1×%2 %3 %4fps",
+          "args": [
+            { "type": "field_number", "name": "WIDTH", "value": 552, "min": 1, "max": 4096, "precision": 1 },
+            { "type": "field_number", "name": "HEIGHT", "value": 368, "min": 1, "max": 4096, "precision": 1 },
+            {
+              "type": "field_dropdown",
+              "name": "FORMAT",
+              "options": [
+                ["RGB888", "FMT_RGB888"],
+                ["RGB565", "FMT_RGB565"],
+                ["灰度", "FMT_GRAYSCALE"]
+              ]
+            },
+            { "type": "field_number", "name": "FPS", "value": 30, "min": 1, "max": 120, "precision": 1 }
+          ],
+          "output": "Object",
+          "code": "camera.Camera(width=%WIDTH%, height=%HEIGHT%, format=image.Format.%FORMAT%, fps=%FPS%)"
+        },
+        {
+          "type": "maix_display_init",
+          "message": "显示屏",
+          "output": "Object",
+          "code": "display.Display()"
+        },
+        {
+          "type": "maix_camera_read",
+          "message": "摄像头 %1 读帧",
+          "args": [{ "type": "input_value", "name": "CAM", "check": "Object" }],
+          "output": "Object",
+          "code": "%CAM%.read()"
+        },
+        {
+          "type": "maix_display_show",
+          "message": "显示图像 %1",
+          "args": [
+            { "type": "input_value", "name": "IMG", "check": "Object" }
+          ],
+          "code": "display.Display().show(%IMG%)"
+        }
+      ]
+    },
+    {
+      "name": "AI视觉",
+      "color": "#7C3AED",
+      "blocks": [
+        {
+          "type": "robex_vision_camera_open",
+          "message": "打开摄像头并同步到屏幕",
+          "code": "robex.vision.open_camera()"
+        },
+        {
+          "type": "robex_vision_camera_close",
+          "message": "关闭摄像头(强制)",
+          "code": "robex.vision.close_camera()"
+        },
+        {
+          "type": "robex_vision_read_qr",
+          "message": "读取二维码字符串",
+          "output": "String",
+          "code": "robex.vision.read_qr()"
+        },
+        {
+          "type": "robex_vision_face_bbox",
+          "message": "人脸识别(返回第一个bbox)",
+          "output": "Array",
+          "code": "robex.vision.detect_face_bbox()"
+        },
+        {
+          "type": "robex_vision_objects",
+          "message": "物品识别(返回列表)",
+          "output": "Array",
+          "code": "robex.vision.detect_objects()"
+        },
+        {
+          "type": "robex_bbox_center",
+          "message": "bbox %1 中心点 %2",
+          "args": [
+            { "type": "input_value", "name": "BBOX", "check": "Array" },
+            {
+              "type": "field_dropdown",
+              "name": "AXIS",
+              "options": [
+                ["X", "\"x\""],
+                ["Y", "\"y\""]
+              ]
+            }
+          ],
+          "output": "Number",
+          "code": "(lambda b, axis=%AXIS%: int(((b[0] + (b[2] / 2)) if axis == \"x\" else (b[1] + (b[3] / 2))) if isinstance(b, (list, tuple)) else (((b.get(\"x\", 0) + (b.get(\"w\", 0) / 2)) if axis == \"x\" else (b.get(\"y\", 0) + (b.get(\"h\", 0) / 2))))))(%BBOX%)"
+        },
+        {
+          "type": "robex_vision_get_nth",
+          "message": "获取检测列表 %1 的第 %2 个目标",
+          "args": [
+            { "type": "input_value", "name": "LIST", "check": "Array" },
+            { "type": "input_value", "name": "INDEX", "check": "Number" }
+          ],
+          "output": "Array",
+          "code": "(lambda l, i=int(%INDEX%)-1: l[i] if isinstance(l, list) and 0 <= i < len(l) else {})(%LIST%)"
+        },
+        {
+          "type": "robex_vision_parse_result",
+          "message": "获取检测结果 %1 的 %2",
+          "args": [
+            { "type": "input_value", "name": "RESULT", "check": "Array" },
+            {
+              "type": "field_dropdown",
+              "name": "ATTR",
+              "options": [
+                ["X坐标", "\"x\""],
+                ["Y坐标", "\"y\""],
+                ["宽度", "\"w\""],
+                ["高度", "\"h\""],
+                ["类别", "\"class_name\""],
+                ["置信度", "\"score\""]
+              ]
+            }
+          ],
+          "output": null,
+          "code": "(lambda r, k=%ATTR%: r.get(k) if isinstance(r, dict) else getattr(r, k, None))(%RESULT%)"
+        }
+      ]
+    },
+    {
+      "name": "普通2轮车",
+      "color": "#68A65C",
+      "blocks": [
+        {
+          "type": "car2_create",
+          "message": "创建2轮小车 左电机 %1 右电机 %2",
+          "args": [
+            {
+              "type": "field_dropdown",
+              "name": "LEFT",
+              "options": [
+                ["M0", "0"],
+                ["M1", "1"],
+                ["M2", "2"],
+                ["M3", "3"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "RIGHT",
+              "options": [
+                ["M0", "0"],
+                ["M1", "1"],
+                ["M2", "2"],
+                ["M3", "3"]
+              ]
+            }
+          ],
+          "output": "Object",
+          "code": "robex.TwoWheelCar(%LEFT%, %RIGHT%)"
+        },
+        {
+          "type": "car2_create_adv",
+          "message": "创建2轮小车(反向) 左电机 %1 右电机 %2 左反向 %3 右反向 %4",
+          "args": [
+            {
+              "type": "field_dropdown",
+              "name": "LEFT",
+              "options": [
+                ["M0", "0"],
+                ["M1", "1"],
+                ["M2", "2"],
+                ["M3", "3"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "RIGHT",
+              "options": [
+                ["M0", "0"],
+                ["M1", "1"],
+                ["M2", "2"],
+                ["M3", "3"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "INV_L",
+              "options": [
+                ["否", "False"],
+                ["是", "True"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "INV_R",
+              "options": [
+                ["否", "False"],
+                ["是", "True"]
+              ]
+            }
+          ],
+          "output": "Object",
+          "code": "robex.TwoWheelCar(%LEFT%, %RIGHT%, invert_left=%INV_L%, invert_right=%INV_R%)"
+        },
+        {
+          "type": "car2_set_wheel_speed",
+          "message": "2轮小车 %1 左轮速度 %2 右轮速度 %3",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" },
+            { "type": "input_value", "name": "LEFT", "check": "Number" },
+            { "type": "input_value", "name": "RIGHT", "check": "Number" }
+          ],
+          "code": "%CAR%.set_wheel_speed(%LEFT%, %RIGHT%)"
+        },
+        {
+          "type": "car2_forward",
+          "message": "2轮小车 %1 前进 速度 %2",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" },
+            { "type": "input_value", "name": "SPEED", "check": "Number" }
+          ],
+          "code": "%CAR%.forward(%SPEED%)"
+        },
+        {
+          "type": "car2_backward",
+          "message": "2轮小车 %1 后退 速度 %2",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" },
+            { "type": "input_value", "name": "SPEED", "check": "Number" }
+          ],
+          "code": "%CAR%.backward(%SPEED%)"
+        },
+        {
+          "type": "car2_turn_left",
+          "message": "2轮小车 %1 左转 速度 %2",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" },
+            { "type": "input_value", "name": "SPEED", "check": "Number" }
+          ],
+          "code": "%CAR%.turn_left(%SPEED%)"
+        },
+        {
+          "type": "car2_turn_right",
+          "message": "2轮小车 %1 右转 速度 %2",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" },
+            { "type": "input_value", "name": "SPEED", "check": "Number" }
+          ],
+          "code": "%CAR%.turn_right(%SPEED%)"
+        },
+        {
+          "type": "car2_stop",
+          "message": "2轮小车 %1 停止(滑行)",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" }
+          ],
+          "code": "%CAR%.stop()"
+        },
+        {
+          "type": "car2_brake",
+          "message": "2轮小车 %1 刹车",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" }
+          ],
+          "code": "%CAR%.brake()"
+        }
+      ]
+    },
+    {
+      "name": "普通4轮车",
+      "color": "#68A65C",
+      "blocks": [
+        {
+          "type": "car4_create",
+          "message": "创建4轮小车 左前 %1 右前 %2 左后 %3 右后 %4",
+          "args": [
+            {
+              "type": "field_dropdown",
+              "name": "FL",
+              "options": [
+                ["M0", "0"],
+                ["M1", "1"],
+                ["M2", "2"],
+                ["M3", "3"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "FR",
+              "options": [
+                ["M0", "0"],
+                ["M1", "1"],
+                ["M2", "2"],
+                ["M3", "3"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "RL",
+              "options": [
+                ["M0", "0"],
+                ["M1", "1"],
+                ["M2", "2"],
+                ["M3", "3"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "RR",
+              "options": [
+                ["M0", "0"],
+                ["M1", "1"],
+                ["M2", "2"],
+                ["M3", "3"]
+              ]
+            }
+          ],
+          "output": "Object",
+          "code": "robex.FourWheelCar(%FL%, %FR%, %RL%, %RR%)"
+        },
+        {
+          "type": "car4_create_adv",
+          "message": "创建4轮小车(反向) 左前 %1 右前 %2 左后 %3 右后 %4 左前反向 %5 右前反向 %6 左后反向 %7 右后反向 %8",
+          "args": [
+            {
+              "type": "field_dropdown",
+              "name": "FL",
+              "options": [
+                ["M0", "0"],
+                ["M1", "1"],
+                ["M2", "2"],
+                ["M3", "3"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "FR",
+              "options": [
+                ["M0", "0"],
+                ["M1", "1"],
+                ["M2", "2"],
+                ["M3", "3"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "RL",
+              "options": [
+                ["M0", "0"],
+                ["M1", "1"],
+                ["M2", "2"],
+                ["M3", "3"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "RR",
+              "options": [
+                ["M0", "0"],
+                ["M1", "1"],
+                ["M2", "2"],
+                ["M3", "3"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "INV_FL",
+              "options": [
+                ["否", "False"],
+                ["是", "True"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "INV_FR",
+              "options": [
+                ["否", "False"],
+                ["是", "True"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "INV_RL",
+              "options": [
+                ["否", "False"],
+                ["是", "True"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "INV_RR",
+              "options": [
+                ["否", "False"],
+                ["是", "True"]
+              ]
+            }
+          ],
+          "output": "Object",
+          "code": "robex.FourWheelCar(%FL%, %FR%, %RL%, %RR%, invert_fl=%INV_FL%, invert_fr=%INV_FR%, invert_rl=%INV_RL%, invert_rr=%INV_RR%)"
+        },
+        {
+          "type": "car4_set_wheel_speed",
+          "message": "4轮小车 %1 轮速 左前 %2 右前 %3 左后 %4 右后 %5",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" },
+            { "type": "input_value", "name": "FL", "check": "Number" },
+            { "type": "input_value", "name": "FR", "check": "Number" },
+            { "type": "input_value", "name": "RL", "check": "Number" },
+            { "type": "input_value", "name": "RR", "check": "Number" }
+          ],
+          "code": "%CAR%.set_wheel_speed(%FL%, %FR%, %RL%, %RR%)"
+        },
+        {
+          "type": "car4_set_left_right",
+          "message": "4轮小车 %1 左侧速度 %2 右侧速度 %3",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" },
+            { "type": "input_value", "name": "LEFT", "check": "Number" },
+            { "type": "input_value", "name": "RIGHT", "check": "Number" }
+          ],
+          "code": "%CAR%.set_left_right(%LEFT%, %RIGHT%)"
+        },
+        {
+          "type": "car4_forward",
+          "message": "4轮小车 %1 前进 速度 %2",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" },
+            { "type": "input_value", "name": "SPEED", "check": "Number" }
+          ],
+          "code": "%CAR%.forward(%SPEED%)"
+        },
+        {
+          "type": "car4_backward",
+          "message": "4轮小车 %1 后退 速度 %2",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" },
+            { "type": "input_value", "name": "SPEED", "check": "Number" }
+          ],
+          "code": "%CAR%.backward(%SPEED%)"
+        },
+        {
+          "type": "car4_turn_left",
+          "message": "4轮小车 %1 左转 速度 %2",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" },
+            { "type": "input_value", "name": "SPEED", "check": "Number" }
+          ],
+          "code": "%CAR%.turn_left(%SPEED%)"
+        },
+        {
+          "type": "car4_turn_right",
+          "message": "4轮小车 %1 右转 速度 %2",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" },
+            { "type": "input_value", "name": "SPEED", "check": "Number" }
+          ],
+          "code": "%CAR%.turn_right(%SPEED%)"
+        },
+        {
+          "type": "car4_stop",
+          "message": "4轮小车 %1 停止(滑行)",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" }
+          ],
+          "code": "%CAR%.stop()"
+        },
+        {
+          "type": "car4_brake",
+          "message": "4轮小车 %1 刹车",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" }
+          ],
+          "code": "%CAR%.brake()"
+        }
+      ]
+    },
+    {
+      "name": "麦克拉姆4驱车",
+      "color": "#68A65C",
+      "blocks": [
+        {
+          "type": "mecanum_create",
+          "message": "创建麦克拉姆4驱 左前 %1 右前 %2 左后 %3 右后 %4",
+          "args": [
+            {
+              "type": "field_dropdown",
+              "name": "FL",
+              "options": [
+                ["M0", "0"],
+                ["M1", "1"],
+                ["M2", "2"],
+                ["M3", "3"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "FR",
+              "options": [
+                ["M0", "0"],
+                ["M1", "1"],
+                ["M2", "2"],
+                ["M3", "3"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "RL",
+              "options": [
+                ["M0", "0"],
+                ["M1", "1"],
+                ["M2", "2"],
+                ["M3", "3"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "RR",
+              "options": [
+                ["M0", "0"],
+                ["M1", "1"],
+                ["M2", "2"],
+                ["M3", "3"]
+              ]
+            }
+          ],
+          "output": "Object",
+          "code": "robex.MecanumCar(%FL%, %FR%, %RL%, %RR%)"
+        },
+        {
+          "type": "mecanum_create_params",
+          "message": "创建麦克拉姆4驱(参数) 左前 %1 右前 %2 左后 %3 右后 %4 轴距cm %5 轮距cm %6 左前反向 %7 右前反向 %8 左后反向 %9 右后反向 %10",
+          "args": [
+            {
+              "type": "field_dropdown",
+              "name": "FL",
+              "options": [
+                ["M0", "0"],
+                ["M1", "1"],
+                ["M2", "2"],
+                ["M3", "3"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "FR",
+              "options": [
+                ["M0", "0"],
+                ["M1", "1"],
+                ["M2", "2"],
+                ["M3", "3"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "RL",
+              "options": [
+                ["M0", "0"],
+                ["M1", "1"],
+                ["M2", "2"],
+                ["M3", "3"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "RR",
+              "options": [
+                ["M0", "0"],
+                ["M1", "1"],
+                ["M2", "2"],
+                ["M3", "3"]
+              ]
+            },
+            { "type": "field_number", "name": "WB", "value": 13, "min": 1, "max": 100, "precision": 0.1 },
+            { "type": "field_number", "name": "TW", "value": 13, "min": 1, "max": 100, "precision": 0.1 },
+            {
+              "type": "field_dropdown",
+              "name": "INV_FL",
+              "options": [
+                ["否", "False"],
+                ["是", "True"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "INV_FR",
+              "options": [
+                ["否", "False"],
+                ["是", "True"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "INV_RL",
+              "options": [
+                ["否", "False"],
+                ["是", "True"]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "INV_RR",
+              "options": [
+                ["否", "False"],
+                ["是", "True"]
+              ]
+            }
+          ],
+          "output": "Object",
+          "code": "robex.MecanumCar(%FL%, %FR%, %RL%, %RR%, wheel_base=%WB%, track_width=%TW%, invert_fl=%INV_FL%, invert_fr=%INV_FR%, invert_rl=%INV_RL%, invert_rr=%INV_RR%)"
+        },
+        {
+          "type": "mecanum_drive",
+          "message": "麦克拉姆4驱 %1 移动 vx %2 vy %3 旋转 %4",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" },
+            { "type": "input_value", "name": "VX", "check": "Number" },
+            { "type": "input_value", "name": "VY", "check": "Number" },
+            { "type": "input_value", "name": "OMEGA", "check": "Number" }
+          ],
+          "code": "%CAR%.drive(%VX%, %VY%, %OMEGA%)"
+        },
+        {
+          "type": "mecanum_forward",
+          "message": "麦克拉姆4驱 %1 前进 速度 %2",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" },
+            { "type": "input_value", "name": "SPEED", "check": "Number" }
+          ],
+          "code": "%CAR%.forward(%SPEED%)"
+        },
+        {
+          "type": "mecanum_backward",
+          "message": "麦克拉姆4驱 %1 后退 速度 %2",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" },
+            { "type": "input_value", "name": "SPEED", "check": "Number" }
+          ],
+          "code": "%CAR%.backward(%SPEED%)"
+        },
+        {
+          "type": "mecanum_strafe_left",
+          "message": "麦克拉姆4驱 %1 左移 速度 %2",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" },
+            { "type": "input_value", "name": "SPEED", "check": "Number" }
+          ],
+          "code": "%CAR%.strafe_left(%SPEED%)"
+        },
+        {
+          "type": "mecanum_strafe_right",
+          "message": "麦克拉姆4驱 %1 右移 速度 %2",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" },
+            { "type": "input_value", "name": "SPEED", "check": "Number" }
+          ],
+          "code": "%CAR%.strafe_right(%SPEED%)"
+        },
+        {
+          "type": "mecanum_rotate_left",
+          "message": "麦克拉姆4驱 %1 左旋 速度 %2",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" },
+            { "type": "input_value", "name": "SPEED", "check": "Number" }
+          ],
+          "code": "%CAR%.rotate_left(%SPEED%)"
+        },
+        {
+          "type": "mecanum_rotate_right",
+          "message": "麦克拉姆4驱 %1 右旋 速度 %2",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" },
+            { "type": "input_value", "name": "SPEED", "check": "Number" }
+          ],
+          "code": "%CAR%.rotate_right(%SPEED%)"
+        },
+        {
+          "type": "mecanum_stop",
+          "message": "麦克拉姆4驱 %1 停止(滑行)",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" }
+          ],
+          "code": "%CAR%.stop()"
+        },
+        {
+          "type": "mecanum_brake",
+          "message": "麦克拉姆4驱 %1 刹车",
+          "args": [
+            { "type": "input_value", "name": "CAR", "check": "Object" }
+          ],
+          "code": "%CAR%.brake()"
+        }
+      ]
+    },
+    {
+      "name": "UI仪表盘/控制台/Rich文本",
+      "color": "#0EA5E9",
+      "blocks": [
+        {
+          "type": "robex_ui_create_dashboard",
+          "message": "创建UI仪表盘 标题 %1",
+          "args": [
+            { "type": "input_value", "name": "TITLE", "check": "String" }
+          ],
+          "code": "robex.ui_create_dashboard(%TITLE%)"
+        },
+        {
+          "type": "robex_ui_bind_servo",
+          "message": "绑定舵机仪表 索引 %1 标题 %2",
+          "args": [
+            { "type": "field_number", "name": "INDEX", "value": 0, "min": 0, "max": 3, "precision": 1 },
+            { "type": "input_value", "name": "TITLE", "check": "String" }
+          ],
+          "code": "robex.ui_bind_servo(%INDEX%, title=%TITLE%)"
+        },
+        {
+          "type": "robex_ui_bind_motor_plan",
+          "message": "绑定电机仪表 索引 %1 标题 %2",
+          "args": [
+            { "type": "field_number", "name": "INDEX", "value": 0, "min": 0, "max": 3, "precision": 1 },
+            { "type": "input_value", "name": "TITLE", "check": "String" }
+          ],
+          "code": "robex.ui_bind_motor(%INDEX%, title=%TITLE%)"
+        },
+        {
+          "type": "robex_ui_bind_motor_wheel",
+          "message": "绑定模拟电机控件 索引 %1 标题 %2",
+          "args": [
+            { "type": "field_number", "name": "INDEX", "value": 0, "min": 0, "max": 3, "precision": 1 },
+            { "type": "input_value", "name": "TITLE", "check": "String" }
+          ],
+          "code": "robex.ui_bind_motor_wheel(%INDEX%, title=%TITLE%)"
+        },
+        {
+          "type": "robex_ui_bind_gpio_indicator",
+          "message": "绑定GPIO监控灯 引脚 %1 标题 %2",
+          "args": [
+            {
+              "type": "field_dropdown",
+              "name": "PIN",
+              "options": [
+                ["G0", "\"G0\""], ["G1", "\"G1\""], ["G2", "\"G2\""], ["G3", "\"G3\""],
+                ["G4", "\"G4\""], ["G5", "\"G5\""], ["G6", "\"G6\""], ["G7", "\"G7\""], ["G8", "\"G8\""],
+                ["SW1", "\"SW1\""], ["SW2", "\"SW2\""], ["LED1", "\"LED1\""], ["LED2", "\"LED2\""]
+              ]
+            },
+            { "type": "input_value", "name": "TITLE", "check": "String" }
+          ],
+          "code": "robex.ui_bind_gpio_indicator(%PIN%, title=%TITLE%)"
+        },
+        {
+          "type": "robex_ui_set_gpio_indicator",
+          "message": "设置GPIO监控灯 引脚 %1 状态 %2",
+          "args": [
+            {
+              "type": "field_dropdown",
+              "name": "PIN",
+              "options": [
+                ["G0", "\"G0\""], ["G1", "\"G1\""], ["G2", "\"G2\""], ["G3", "\"G3\""],
+                ["G4", "\"G4\""], ["G5", "\"G5\""], ["G6", "\"G6\""], ["G7", "\"G7\""], ["G8", "\"G8\""],
+                ["SW1", "\"SW1\""], ["SW2", "\"SW2\""], ["LED1", "\"LED1\""], ["LED2", "\"LED2\""]
+              ]
+            },
+            {
+              "type": "field_dropdown",
+              "name": "STATE",
+              "options": [
+                ["开", "True"],
+                ["关", "False"]
+              ]
+            }
+          ],
+          "code": "robex.ui_set_gpio_indicator(%PIN%, %STATE%)"
+        },
+        {
+          "type": "robex_ui_rich_text",
+          "message": "Rich文本 输出 %1",
+          "args": [
+            { "type": "input_value", "name": "TEXT", "check": "String" }
+          ],
+          "code": "robex.ui_rich_text(%TEXT%)"
+        },
+        {
+          "type": "robex_ui_console_print",
+          "message": "控制台输出 %1",
+          "args": [
+            { "type": "input_value", "name": "TEXT", "check": "String" }
+          ],
+          "code": "robex.ui_console_print(%TEXT%)"
+        }
+      ]
+    }
+  ]
+}

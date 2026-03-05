@@ -1,0 +1,29 @@
+{
+  "name": "robexide",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "RobEx IDE is a cross-platform IDE for RobEx, a smart robot platform.",
+  "author": "Qiuxin Education Tech Ltd",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "build": "electron-builder"
+  },
+  "dependencies": {
+    "@codemirror/lang-python": "^6.2.0",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.36.2",
+    "@uiw/react-codemirror": "^4.23.7",
+    "blockly": "^10.4.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-markdown": "^9.0.1",
+    "ssh2": "^1.17.0"
+  },
+  "devDependencies": {
+    "electron": "^40.6.1",
+    "electron-builder": "^25.1.7"
+  }
+}

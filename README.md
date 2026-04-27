@@ -15,8 +15,11 @@
 | 🧩 **图形化积木编程** | 基于 Blockly，拖拽积木即可生成 Python 代码 |
 | 🍓 **树莓派5专属积木** | GPIO 输出/输入、PWM、舵机、电机、超声波、NeoPixel、I2C、UART |
 | 🐍 **实时 Python 预览** | 积木变化时即时显示对应的 Python 代码 |
-| 🔌 **SSH一键部署** | 通过 SSH 上传并运行脚本，实时显示程序输出 |
-| 🔍 **自动设备发现** | UDP 广播自动发现局域网内的树莓派设备 |
+| 🔌 **SSH 一键部署** | 通过 SSH/SFTP 上传并运行脚本，实时显示程序输出 |
+| 🔍 **自动设备发现** | 扫描局域网 SSH 端口，并区分“端口开放设备”和“凭据可登录设备” |
+| 💻 **交互式 SSH 终端** | 在 IDE 内直接建立远程 shell，会话中可输入命令并查看回显 |
+| 📟 **内置 SSH 控制台** | 支持控制台日志复制、手动清空、切换标签后保留状态 |
+| 👁 **连接表单优化** | 支持密码显示/隐藏、发现设备列表折叠、设备状态标签显示 |
 | 💾 **项目保存/加载** | 保存为 XML 格式，或直接导出 `.py` 文件 |
 
 ---
@@ -97,6 +100,24 @@ sudo usermod -aG gpio $USER
 > sudo apt install python3-lgpio
 > ```
 
+### 4. 启用 SSH
+
+如果你希望在 IDE 中使用“自动发现”“上传脚本”“连接终端”等功能，请确认树莓派已开启 SSH：
+
+```bash
+sudo raspi-config nonint do_ssh 0
+sudo systemctl enable ssh
+sudo systemctl start ssh
+```
+
+你也可以直接在 Windows 终端测试：
+
+```bash
+ssh wiz@192.168.1.185
+```
+
+如果终端能连接，IDE 中的 SSH 上传、运行和终端连接通常也能正常工作。
+
 ---
 
 ## 📐 项目结构
@@ -104,7 +125,7 @@ sudo usermod -aG gpio $USER
 ```
 raspberry-pi-ide/
 ├── electron/
-│   ├── main.cjs          # Electron 主进程 (SSH, UDP 发现)
+│   ├── main.cjs          # Electron 主进程 (SSH, 自动发现, 交互式终端)
 │   └── preload.cjs       # Context Bridge API 暴露
 ├── src/
 │   ├── main.jsx          # React 入口
@@ -112,7 +133,7 @@ raspberry-pi-ide/
 │   ├── components/
 │   │   ├── BlocklyEditor.jsx    # Blockly 工作区 (暗色主题)
 │   │   ├── CodeViewer.jsx       # Python 代码预览 (CodeMirror)
-│   │   ├── ConnectionPanel.jsx  # SSH 连接/上传/运行面板
+│   │   ├── ConnectionPanel.jsx  # SSH 连接/发现/终端/运行面板
 │   │   └── Toolbar.jsx          # 顶部工具栏
 │   ├── blocks/
 │   │   ├── index.js             # 块注册入口 + Toolbox 定义
@@ -138,10 +159,82 @@ raspberry-pi-ide/
 Windows IDE
    │
    ├─① SSH 连接 (用户名+密码)
-   ├─② SFTP 上传 main.py → /home/pi/rpi_ide_scripts/main.py
-   ├─③ ssh.exec("python3 -u main.py") → 实时流式输出
-   └─④ kill: pkill -f "main.py"
+   ├─② SFTP 上传 main.py → /home/<username>/carbot/main.py
+   ├─③ ssh.exec("python3 -u /home/<username>/carbot/main.py") → 实时流式输出
+   └─④ kill: pkill -f "/home/<username>/carbot/main.py"
 ```
+
+---
+
+## 🔎 自动发现逻辑
+
+当前“自动发现”不是单纯的 UDP 广播，而是更接近真实 SSH 连接前的验证流程：
+
+```text
+读取本机 IPv4 网段
+→ 扫描局域网中开放 22 端口的地址
+→ 对开放地址尝试 SSH 登录
+→ 区分：
+   1. SSH 已开放但登录失败
+   2. SSH 已开放且登录成功
+```
+
+这意味着你在界面中可以看到两类结果：
+
+- `可登录`：当前用户名和密码可以直接连接
+- `SSH已开`：22 端口开放，但当前凭据无法登录
+
+这样可以更快区分“树莓派没开机”和“用户名/密码错误”。
+
+---
+
+## 💻 连接面板说明
+
+连接页目前包含以下能力：
+
+- 手动输入树莓派 IP、用户名、密码
+- 显示动态上传目标路径：`/home/<username>/carbot/main.py`
+- 自动发现并列出局域网 SSH 设备
+- 一键上传脚本并运行
+- 连接交互式 SSH 终端，直接输入命令
+- 复制控制台内容或手动清空控制台
+- 折叠“发现的设备”列表，减少界面占用
+- 切换“代码 / 连接”标签后保留连接页状态，不会自动清空
+
+---
+
+## 🧪 常见排查
+
+### 1. 自动发现提示“未发现开放 SSH 端口的设备”
+
+请确认：
+
+- 树莓派已开机
+- Windows 与树莓派在同一局域网
+- 树莓派已启用 SSH
+- 路由器没有隔离客户端
+
+### 2. 自动发现能看到 `SSH已开`，但没有 `可登录`
+
+这通常表示：
+
+- IP 是对的
+- 树莓派 SSH 服务已经开启
+- 但当前用户名或密码不正确
+
+可以先在本机终端验证：
+
+```bash
+ssh <username>@<ip>
+```
+
+### 3. 终端能连，但 IDE 上传失败
+
+请检查：
+
+- 当前用户是否有写入 `/home/<username>/carbot/` 的权限
+- 网络连接是否稳定
+- 密码是否在 IDE 中填写正确
 
 ---
 

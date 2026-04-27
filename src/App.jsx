@@ -59,13 +59,19 @@ export default function App() {
                         ))}
                     </div>
 
-                    {/* Code viewer */}
-                    {activeTab === "code" && <CodeViewer code={code} />}
+                    <div
+                        className="panel-view"
+                        style={{ display: activeTab === "code" ? "flex" : "none" }}
+                    >
+                        <CodeViewer code={code} />
+                    </div>
 
-                    {/* Connection panel */}
-                    {activeTab === "connect" && (
+                    <div
+                        className="panel-view"
+                        style={{ display: activeTab === "connect" ? "flex" : "none" }}
+                    >
                         <ConnectionPanel code={code} onStatusChange={handleConnStatusChange} />
-                    )}
+                    </div>
                 </div>
             </div>
 

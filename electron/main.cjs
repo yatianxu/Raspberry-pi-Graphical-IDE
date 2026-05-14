@@ -13,6 +13,16 @@ const { Client } = require("ssh2");
 
 const activeShellSessions = new Map();
 
+function safeSendToRenderer(webContents, channel, data) {
+  if (!channel || !webContents || webContents.isDestroyed()) return false;
+  try {
+    webContents.send(channel, data);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function getRemoteScriptPath(username) {
   return `/home/${username}/carbot/main.py`;
 }
@@ -307,7 +317,7 @@ function execSSH(conn, command) {
 
 ipcMain.handle("ssh-upload-script", async (event, { ip, username, password, code, progressChannel }) => {
   const sendProgress = (data) => {
-    if (progressChannel) event.sender.send(progressChannel, data);
+    safeSendToRenderer(event.sender, progressChannel, data);
   };
   const remoteScriptPath = getRemoteScriptPath(username);
   const remoteScriptDir = getRemoteScriptDir(username);
@@ -352,7 +362,7 @@ const activeRunConnections = new Map();
 
 ipcMain.handle("ssh-run-script", async (event, { ip, username, password, progressChannel }) => {
   const send = (data) => {
-    if (progressChannel) event.sender.send(progressChannel, data);
+    safeSendToRenderer(event.sender, progressChannel, data);
   };
   const remoteScriptPath = getRemoteScriptPath(username);
 
@@ -401,7 +411,7 @@ ipcMain.handle("ssh-shell-open", async (event, {
   rows = 30,
 } = {}) => {
   const send = (data) => {
-    if (progressChannel) event.sender.send(progressChannel, data);
+    safeSendToRenderer(event.sender, progressChannel, data);
   };
 
   if (!sessionId) {

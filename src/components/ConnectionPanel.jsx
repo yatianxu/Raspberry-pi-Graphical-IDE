@@ -12,6 +12,8 @@ const ANSI_OSC_REGEX = /\u001B\][^\u0007\u001B]*(?:\u0007|\u001B\\)/g;
 const ANSI_SINGLE_ESCAPE_REGEX = /\u001B[@-_]/g;
 const OTHER_CONTROL_REGEX = /[\u0000-\u0008\u000B-\u001A\u001C-\u001F\u007F]/g;
 const EMPTY_GENERATED_CODE = "# 拖拽积木块开始编程...";
+const CONNECTION_STORAGE_KEY = "raspberry-ide.connection";
+const MAX_TERMINAL_HISTORY = 100;
 
 function getRemoteScriptPath(username) {
     return `/home/${username}/carbot/main.py`;
@@ -32,15 +34,31 @@ function isUploadableCode(text) {
     return normalized !== "" && normalized !== EMPTY_GENERATED_CODE;
 }
 
+function loadSavedConnection() {
+    try {
+        const raw = window.localStorage.getItem(CONNECTION_STORAGE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return {
+            ip: typeof parsed?.ip === "string" ? parsed.ip : "",
+            username: typeof parsed?.username === "string" ? parsed.username : DEFAULT_USERNAME,
+            password: typeof parsed?.password === "string" ? parsed.password : DEFAULT_PASSWORD,
+        };
+    } catch {
+        return null;
+    }
+}
+
 /**
  * @param {object} props
  * @param {string} props.code - Python code to upload
  * @param {function({connected,running,ip}):void} props.onStatusChange
  */
 export default function ConnectionPanel({ code, onStatusChange }) {
-    const [ip, setIp] = useState("");
-    const [username, setUsername] = useState(DEFAULT_USERNAME);
-    const [password, setPassword] = useState(DEFAULT_PASSWORD);
+    const savedConnection = loadSavedConnection();
+    const [ip, setIp] = useState(savedConnection?.ip || "");
+    const [username, setUsername] = useState(savedConnection?.username || DEFAULT_USERNAME);
+    const [password, setPassword] = useState(savedConnection?.password || DEFAULT_PASSWORD);
     const [devices, setDevices] = useState([]);
     const [devicesCollapsed, setDevicesCollapsed] = useState(false);
     const [discovering, setDiscovering] = useState(false);
@@ -51,6 +69,9 @@ export default function ConnectionPanel({ code, onStatusChange }) {
     const [shellConnected, setShellConnected] = useState(false);
     const [shellConnecting, setShellConnecting] = useState(false);
     const [terminalInput, setTerminalInput] = useState("");
+    const [terminalHistory, setTerminalHistory] = useState([]);
+    const [historyIndex, setHistoryIndex] = useState(-1);
+    const [historyDraft, setHistoryDraft] = useState("");
     const [consoleLines, setConsoleLines] = useState([
         { text: "Raspberry Pi IDE — SSH 控制台就绪", type: "info" },
         { text: "请先发现或手动输入树莓派 IP，然后上传并运行脚本。", type: "info" },
@@ -90,6 +111,18 @@ export default function ConnectionPanel({ code, onStatusChange }) {
             }
         };
     }, []);
+
+    useEffect(() => {
+        try {
+            window.localStorage.setItem(CONNECTION_STORAGE_KEY, JSON.stringify({
+                ip,
+                username,
+                password,
+            }));
+        } catch {
+            // ignore persistence failures
+        }
+    }, [ip, username, password]);
 
     // --- 设备发现 ---
     const discover = async () => {
@@ -274,14 +307,20 @@ export default function ConnectionPanel({ code, onStatusChange }) {
     };
 
     const submitTerminalInput = async () => {
-        const command = terminalInput;
-        if (!command.trim()) return;
+        const command = terminalInput.trim();
+        if (!command) return;
         if (!shellConnected || !window.electronAPI?.sshShellWrite) {
             appendLog("请先连接 SSH 终端后再输入命令", "warning");
             return;
         }
 
         setTerminalInput("");
+        setHistoryDraft("");
+        setHistoryIndex(-1);
+        setTerminalHistory((prev) => {
+            const next = prev[prev.length - 1] === command ? prev : [...prev, command];
+            return next.length > MAX_TERMINAL_HISTORY ? next.slice(-MAX_TERMINAL_HISTORY) : next;
+        });
         const result = await window.electronAPI.sshShellWrite({
             sessionId: SHELL_SESSION_ID,
             data: `${command}\n`,
@@ -434,11 +473,42 @@ export default function ConnectionPanel({ code, onStatusChange }) {
                             className="terminal-input"
                             type="text"
                             value={terminalInput}
-                            onChange={(e) => setTerminalInput(e.target.value)}
+                            onChange={(e) => {
+                                setTerminalInput(e.target.value);
+                                if (historyIndex === -1) {
+                                    setHistoryDraft(e.target.value);
+                                }
+                            }}
                             onKeyDown={(e) => {
                                 if (e.key === "Enter") {
                                     e.preventDefault();
                                     submitTerminalInput();
+                                    return;
+                                }
+                                if (e.key === "ArrowUp") {
+                                    if (terminalHistory.length === 0) return;
+                                    e.preventDefault();
+                                    const nextIndex = historyIndex === -1
+                                        ? terminalHistory.length - 1
+                                        : Math.max(0, historyIndex - 1);
+                                    if (historyIndex === -1) {
+                                        setHistoryDraft(terminalInput);
+                                    }
+                                    setHistoryIndex(nextIndex);
+                                    setTerminalInput(terminalHistory[nextIndex]);
+                                    return;
+                                }
+                                if (e.key === "ArrowDown") {
+                                    if (terminalHistory.length === 0 || historyIndex === -1) return;
+                                    e.preventDefault();
+                                    const nextIndex = historyIndex + 1;
+                                    if (nextIndex >= terminalHistory.length) {
+                                        setHistoryIndex(-1);
+                                        setTerminalInput(historyDraft);
+                                        return;
+                                    }
+                                    setHistoryIndex(nextIndex);
+                                    setTerminalInput(terminalHistory[nextIndex]);
                                 }
                             }}
                             placeholder={shellConnected ? "输入命令并回车" : "先连接终端，再输入命令"}

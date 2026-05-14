@@ -21,3 +21,6 @@
 - 已将 Electron 侧 shell `term` 从 `xterm-color` 调整为 `vt100`，用于减少 Bash 主动输出的终端特性控制码。
 - 已在 PWM / 舵机 / 电机积木生成代码中统一插入 `warnings.filterwarnings("ignore", category=PWMSoftwareFallback)`，从源头静默这类提示。
 - 这次处理的是“日志噪声”，不是软件 PWM 本身的硬实时能力；若用户要降低舵机抖动，仍应优先考虑 `pigpio` 或硬件 PWM 路线。
+- 当前仓库对外说明文档只有 `README.md`，没有独立的 `docs/` 目录或其他用户文档入口。
+- README 此前已经补入了 Python 可编辑、`pigpio`、`close()` 等说明，但仍缺少连接信息持久化、终端命令历史、手动代码上传行为和主进程安全发送修复的文档描述。
+- README 项目结构里此前写的是 `vite.config.js`，与实际文件 `vite.config.mjs` 不一致，需要修正。

@@ -58,6 +58,8 @@ export default function BlocklyEditor({ onCodeChange }) {
     useEffect(() => {
         if (!containerRef.current) return;
 
+        const blocklyMediaPath = new URL("./media/", window.location.href).href;
+
         // Build theme once, inside effect (browser context, Blockly fully loaded)
         let theme;
         try {
@@ -183,6 +185,9 @@ export default function BlocklyEditor({ onCodeChange }) {
 
         const injectOptions = {
             toolbox: RPI5_TOOLBOX,
+            // Force Blockly to load media assets from our bundled local file
+            // instead of the default remote demo host.
+            media: blocklyMediaPath,
             grid: {
                 spacing: 24,
                 length: 3,

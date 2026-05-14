@@ -7,9 +7,23 @@ const DEFAULT_USERNAME = "wiz";
 const DEFAULT_PASSWORD = "raspberry";
 const MAX_CONSOLE_LINES = 500;
 const SHELL_SESSION_ID = "connection-panel-shell";
+const ANSI_CSI_REGEX = /\u001B\[[0-?]*[ -/]*[@-~]/g;
+const ANSI_OSC_REGEX = /\u001B\][^\u0007\u001B]*(?:\u0007|\u001B\\)/g;
+const ANSI_SINGLE_ESCAPE_REGEX = /\u001B[@-_]/g;
+const OTHER_CONTROL_REGEX = /[\u0000-\u0008\u000B-\u001A\u001C-\u001F\u007F]/g;
 
 function getRemoteScriptPath(username) {
     return `/home/${username}/carbot/main.py`;
+}
+
+function normalizeConsoleText(text) {
+    return String(text ?? "")
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n")
+        .replace(ANSI_OSC_REGEX, "")
+        .replace(ANSI_CSI_REGEX, "")
+        .replace(ANSI_SINGLE_ESCAPE_REGEX, "")
+        .replace(OTHER_CONTROL_REGEX, "");
 }
 
 /**
@@ -39,8 +53,14 @@ export default function ConnectionPanel({ code, onStatusChange }) {
     const consoleRef = useRef(null);
     const remoteScriptPath = getRemoteScriptPath(username);
     const appendLog = useCallback((text, type = "output") => {
+        const lines = normalizeConsoleText(text)
+            .split("\n")
+            .map((line) => line.trimEnd())
+            .filter((line) => line.length > 0);
+        if (lines.length === 0) return;
+
         setConsoleLines((prev) => {
-            const next = [...prev, { text, type }];
+            const next = [...prev, ...lines.map((line) => ({ text: line, type }))];
             return next.length > MAX_CONSOLE_LINES ? next.slice(-MAX_CONSOLE_LINES) : next;
         });
     }, []);
@@ -266,7 +286,7 @@ export default function ConnectionPanel({ code, onStatusChange }) {
     };
 
     const copyConsole = async () => {
-        const text = consoleLines.map((line) => line.text).join("");
+        const text = consoleLines.map((line) => line.text).join("\n");
         try {
             await navigator.clipboard.writeText(text);
             appendLog("已复制控制台内容", "success");

@@ -58,7 +58,7 @@
       }
     ],
     "win": {
-      "icon": "dist/images/icon.ico",
+      "icon": "images/icon.ico",
       "target": [
         {
           "target": "nsis",
@@ -73,8 +73,8 @@
       "allowToChangeInstallationDirectory": true,
       "shortcutName": "Raspberry Pi IDE",
       "createDesktopShortcut": true,
-      "installerIcon": "dist/images/icon.ico",
-      "uninstallerIcon": "dist/images/icon.ico"
+      "installerIcon": "images/icon.ico",
+      "uninstallerIcon": "images/icon.ico"
     }
   }
 }

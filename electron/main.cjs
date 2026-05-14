@@ -421,7 +421,7 @@ ipcMain.handle("ssh-shell-open", async (event, {
     send({ type: "info", text: `SSH 已连接: ${username}@${ip}\n` });
 
     return await new Promise((resolve) => {
-      conn.shell({ term: "xterm-color", cols, rows }, (err, stream) => {
+      conn.shell({ term: "vt100", cols, rows }, (err, stream) => {
         if (err) {
           try { conn.end(); } catch { /* ignore */ }
           resolve({ success: false, error: `终端启动失败: ${err.message}` });

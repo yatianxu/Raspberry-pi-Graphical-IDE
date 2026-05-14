@@ -31,6 +31,49 @@ function getRemoteScriptDir(username) {
   return path.posix.dirname(getRemoteScriptPath(username));
 }
 
+function shellEscapeSingle(value) {
+  return `'${String(value).replace(/'/g, `'\\''`)}'`;
+}
+
+function withTimeout(promise, timeoutMs, message) {
+  let timer = null;
+  const timeoutPromise = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(message)), timeoutMs);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    if (timer) clearTimeout(timer);
+  });
+}
+
+function buildPreUploadCleanupCommand(remoteScriptPath) {
+  const quotedPath = shellEscapeSingle(remoteScriptPath);
+  return [
+    "set +e",
+    "sudo -n systemctl stop carbot.service >/dev/null 2>&1 || true",
+    "for attempt in 1 2 3; do",
+    "  pids=$(ps -ef | grep '[m]ain.py' | awk '{print $2}')",
+    "  if [ -z \"$pids\" ]; then",
+    "    echo '__RPI_IDE_MAINPY__:clear'",
+    "    exit 0",
+    "  fi",
+    "  kill $pids >/dev/null 2>&1 || true",
+    `  pkill -f ${quotedPath} >/dev/null 2>&1 || true`,
+    "  sleep 1",
+    "done",
+    "pids=$(ps -ef | grep '[m]ain.py' | awk '{print $2}')",
+    "if [ -n \"$pids\" ]; then",
+    "  kill -9 $pids >/dev/null 2>&1 || true",
+    "  sleep 1",
+    "fi",
+    "pids=$(ps -ef | grep '[m]ain.py' | awk '{print $2}')",
+    "if [ -n \"$pids\" ]; then",
+    "  echo \"__RPI_IDE_MAINPY__:busy:$pids\"",
+    "  exit 2",
+    "fi",
+    "echo '__RPI_IDE_MAINPY__:clear'",
+  ].join("\n");
+}
+
 // ───────────────────────────────────────────────────────────
 // Window
 // ───────────────────────────────────────────────────────────
@@ -321,11 +364,24 @@ ipcMain.handle("ssh-upload-script", async (event, { ip, username, password, code
   };
   const remoteScriptPath = getRemoteScriptPath(username);
   const remoteScriptDir = getRemoteScriptDir(username);
+  let conn = null;
 
   try {
     sendProgress({ status: "connecting", message: `正在连接 ${ip}...` });
-    const conn = await connectSSH({ ip, username, password });
+    conn = await connectSSH({ ip, username, password });
     sendProgress({ status: "connected", message: `SSH 已连接，目标路径 ${remoteScriptPath}` });
+
+    sendProgress({ status: "preparing", message: "正在停止 carbot.service 并检查 main.py 占用..." });
+    const cleanupResult = await withTimeout(
+      execSSH(conn, `bash -lc ${shellEscapeSingle(buildPreUploadCleanupCommand(remoteScriptPath))}`),
+      15000,
+      "上传前停止服务或清理 main.py 进程超时"
+    );
+    if (cleanupResult.code !== 0) {
+      const detail = cleanupResult.stdout.trim() || cleanupResult.stderr.trim() || "main.py 进程仍在运行";
+      throw new Error(`上传前清理失败: ${detail}`);
+    }
+    sendProgress({ status: "preparing", message: "已停止 carbot.service，并确认 main.py 未占用 GPIO" });
 
     // Ensure target directory exists
     await execSSH(conn, `mkdir -p ${remoteScriptDir}`);
@@ -349,6 +405,7 @@ ipcMain.handle("ssh-upload-script", async (event, { ip, username, password, code
     conn.end();
     return { success: true, remotePath: remoteScriptPath };
   } catch (err) {
+    try { conn?.end(); } catch { /* ignore */ }
     return { success: false, error: err.message };
   }
 });

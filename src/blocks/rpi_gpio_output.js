@@ -14,6 +14,13 @@ const BCM_PINS = Array.from({ length: 26 }, (_, i) => {
     return [`GPIO ${pin}`, String(pin)];
 });
 
+function ensureGpiozeroImports() {
+    pythonGenerator.definitions_["import_gpiozero"] =
+        "from gpiozero import LED, PWMLED, Button, Buzzer, AngularServo, Motor, DistanceSensor, DigitalOutputDevice, DigitalInputDevice, Device";
+    pythonGenerator.definitions_["import_signal"] =
+        "from signal import pause";
+}
+
 // ─────────────────────────────────────────────
 // Block Definitions
 // ─────────────────────────────────────────────
@@ -28,6 +35,25 @@ Blockly.common.defineBlocksWithJsonArray([
         colour: "#4A90D9",
         tooltip: "导入 gpiozero 所有常用类",
         helpUrl: "https://gpiozero.readthedocs.io",
+    },
+
+    {
+        type: "rpi_gpio_backend",
+        message0: "GPIO 后端 %1",
+        args0: [
+            {
+                type: "field_dropdown",
+                name: "BACKEND",
+                options: [
+                    ["默认", "default"],
+                    ["pigpio", "pigpio"],
+                ],
+            },
+        ],
+        previousStatement: null,
+        nextStatement: null,
+        colour: "#4A90D9",
+        tooltip: "选择 gpiozero 使用的引脚后端；pigpio 适合更稳定的 PWM/舵机控制",
     },
 
     // --- LED 创建
@@ -202,6 +228,16 @@ Blockly.common.defineBlocksWithJsonArray([
         colour: "#5CA65C",
         tooltip: "控制数字输出设备",
     },
+
+    {
+        type: "rpi_gpio_close",
+        message0: "GPIO 对象 %1 close()",
+        args0: [{ type: "field_input", name: "VAR", text: "led" }],
+        previousStatement: null,
+        nextStatement: null,
+        colour: "#4A90D9",
+        tooltip: "释放 gpiozero 设备占用的 GPIO 资源",
+    },
 ]);
 
 // ─────────────────────────────────────────────
@@ -209,16 +245,26 @@ Blockly.common.defineBlocksWithJsonArray([
 // ─────────────────────────────────────────────
 
 pythonGenerator.forBlock["rpi_import_gpiozero"] = function () {
-    pythonGenerator.definitions_["import_gpiozero"] =
-        "from gpiozero import LED, PWMLED, Button, Buzzer, AngularServo, Motor, DistanceSensor, DigitalOutputDevice, DigitalInputDevice";
-    pythonGenerator.definitions_["import_signal"] =
-        "from signal import pause";
+    ensureGpiozeroImports();
+    return "";
+};
+
+pythonGenerator.forBlock["rpi_gpio_backend"] = function (block) {
+    const backend = block.getFieldValue("BACKEND");
+    ensureGpiozeroImports();
+    if (backend === "pigpio") {
+        pythonGenerator.definitions_["import_pigpio_factory"] =
+            "from gpiozero.pins.pigpio import PiGPIOFactory";
+        pythonGenerator.definitions_["set_gpio_backend"] =
+            "Device.pin_factory = PiGPIOFactory()";
+    }
     return "";
 };
 
 pythonGenerator.forBlock["rpi_led_create"] = function (block) {
     const pin = block.getFieldValue("PIN");
     const varName = block.getFieldValue("VAR");
+    ensureGpiozeroImports();
     return `${varName} = LED(${pin})\n`;
 };
 
@@ -248,6 +294,7 @@ pythonGenerator.forBlock["rpi_led_blink"] = function (block, generator) {
 pythonGenerator.forBlock["rpi_pwmled_create"] = function (block) {
     const pin = block.getFieldValue("PIN");
     const varName = block.getFieldValue("VAR");
+    ensureGpiozeroImports();
     return `${varName} = PWMLED(${pin})\n`;
 };
 
@@ -260,6 +307,7 @@ pythonGenerator.forBlock["rpi_pwmled_value"] = function (block, generator) {
 pythonGenerator.forBlock["rpi_buzzer_create"] = function (block) {
     const pin = block.getFieldValue("PIN");
     const varName = block.getFieldValue("VAR");
+    ensureGpiozeroImports();
     return `${varName} = Buzzer(${pin})\n`;
 };
 
@@ -273,6 +321,7 @@ pythonGenerator.forBlock["rpi_digital_output_create"] = function (block) {
     const pin = block.getFieldValue("PIN");
     const varName = block.getFieldValue("VAR");
     const init = block.getFieldValue("INIT");
+    ensureGpiozeroImports();
     return `${varName} = DigitalOutputDevice(${pin}, initial_value=${init})\n`;
 };
 
@@ -280,4 +329,9 @@ pythonGenerator.forBlock["rpi_digital_output_ctrl"] = function (block) {
     const varName = block.getFieldValue("VAR");
     const action = block.getFieldValue("ACTION");
     return `${varName}.${action}()\n`;
+};
+
+pythonGenerator.forBlock["rpi_gpio_close"] = function (block) {
+    const varName = block.getFieldValue("VAR");
+    return `${varName}.close()\n`;
 };

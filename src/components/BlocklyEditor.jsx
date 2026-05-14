@@ -28,6 +28,7 @@ function buildTheme() {
             scrollbarColour: "#484f58",
             insertionMarkerColour: "#3abe85",
             insertionMarkerOpacity: 0.3,
+            
             scrollbarOpacity: 0.6,
             cursorColour: "#3abe85",
         },

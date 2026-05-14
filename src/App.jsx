@@ -18,12 +18,18 @@ const RIGHT_TABS = [
 ];
 
 export default function App() {
+    const [generatedCode, setGeneratedCode] = useState(INITIAL_CODE);
     const [code, setCode] = useState(INITIAL_CODE);
     const [activeTab, setActiveTab] = useState("code");
     const [connStatus, setConnStatus] = useState({ connected: false, running: false, ip: "" });
 
-    const handleCodeChange = useCallback((newCode) => {
+    const handleGeneratedCodeChange = useCallback((newCode) => {
+        setGeneratedCode(newCode);
         setCode(newCode);
+    }, []);
+
+    const handleManualCodeChange = useCallback((nextCode) => {
+        setCode(nextCode);
     }, []);
 
     const handleConnStatusChange = useCallback((status) => {
@@ -31,6 +37,7 @@ export default function App() {
     }, []);
 
     const codeLineCount = code.split("\n").filter((l) => l.trim() && !l.trim().startsWith("#")).length;
+    const isManualCode = code !== generatedCode;
 
     return (
         <div className="app-shell">
@@ -41,7 +48,7 @@ export default function App() {
             <div className="main-content">
                 {/* Blockly workspace — left */}
                 <div className="workspace-panel">
-                    <BlocklyEditor onCodeChange={handleCodeChange} />
+                    <BlocklyEditor onCodeChange={handleGeneratedCodeChange} />
                 </div>
 
                 {/* Right panel */}
@@ -63,7 +70,12 @@ export default function App() {
                         className="panel-view"
                         style={{ display: activeTab === "code" ? "flex" : "none" }}
                     >
-                        <CodeViewer code={code} />
+                        <CodeViewer
+                            code={code}
+                            generatedCode={generatedCode}
+                            isManualCode={isManualCode}
+                            onCodeChange={handleManualCodeChange}
+                        />
                     </div>
 
                     <div
@@ -88,14 +100,14 @@ export default function App() {
                     </span>
                 </div>
                 <div className="status-item">
-                    <span>代码行数：{codeLineCount}</span>
+                    <span>{isManualCode ? "手动代码模式" : "积木代码模式"} · 代码行数：{codeLineCount}</span>
                 </div>
                 <div style={{ flex: 1 }} />
                 <div className="status-item">
                     <span style={{ color: "var(--accent)" }}>🍓 Raspberry Pi 5</span>
                 </div>
                 <div className="status-item">
-                    <span>gpiozero · rpi_ws281x · smbus2 · pyserial</span>
+                    <span>gpiozero · pigpio · rpi_ws281x · smbus2 · pyserial</span>
                 </div>
             </div>
         </div>

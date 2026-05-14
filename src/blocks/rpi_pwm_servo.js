@@ -10,6 +10,11 @@ const BCM_PINS = Array.from({ length: 26 }, (_, i) => {
     return [`GPIO ${pin}`, String(pin)];
 });
 
+function ensureGpiozeroImports() {
+    pythonGenerator.definitions_["import_gpiozero"] =
+        "from gpiozero import LED, PWMLED, Button, Buzzer, AngularServo, Motor, DistanceSensor, DigitalOutputDevice, DigitalInputDevice, Device";
+}
+
 Blockly.common.defineBlocksWithJsonArray([
     // --- Servo 创建
     {
@@ -167,6 +172,7 @@ Blockly.common.defineBlocksWithJsonArray([
 // ─────────── Python Generators ───────────
 
 function ensurePwmWarningFilter() {
+    ensureGpiozeroImports();
     pythonGenerator.definitions_["import_warnings"] = "import warnings";
     pythonGenerator.definitions_["import_pwm_warning"] =
         "from gpiozero.exc import PWMSoftwareFallback";
@@ -180,8 +186,6 @@ pythonGenerator.forBlock["rpi_servo_create"] = function (block) {
     const maxA = block.getFieldValue("MAX_ANGLE");
     const varName = block.getFieldValue("VAR");
     ensurePwmWarningFilter();
-    pythonGenerator.definitions_["import_servo"] =
-        "from gpiozero import AngularServo";
     return `${varName} = AngularServo(${pin}, min_angle=${minA}, max_angle=${maxA})\n`;
 };
 
@@ -206,8 +210,6 @@ pythonGenerator.forBlock["rpi_motor_create"] = function (block) {
     const bwd = block.getFieldValue("BACKWARD");
     const varName = block.getFieldValue("VAR");
     ensurePwmWarningFilter();
-    pythonGenerator.definitions_["import_motor"] =
-        "from gpiozero import Motor";
     return `${varName} = Motor(forward=${fwd}, backward=${bwd})\n`;
 };
 
@@ -228,8 +230,6 @@ pythonGenerator.forBlock["rpi_pwm_output_create"] = function (block) {
     const freq = block.getFieldValue("FREQ");
     const varName = block.getFieldValue("VAR");
     ensurePwmWarningFilter();
-    pythonGenerator.definitions_["import_pwm"] =
-        "from gpiozero import PWMOutputDevice";
     return `${varName} = PWMOutputDevice(${pin}, frequency=${freq})\n`;
 };
 

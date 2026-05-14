@@ -4,6 +4,8 @@
 import { useState, useCallback } from "react";
 import * as Blockly from "blockly";
 
+const EMPTY_GENERATED_CODE = "# 拖拽积木块开始编程...";
+
 /**
  * @param {object} props
  * @param {string} props.code - current generated Python
@@ -82,7 +84,8 @@ export default function Toolbar({ code, connStatus }) {
     };
 
     const savePython = () => {
-        if (!code || code.startsWith("# 拖拽")) return;
+        const normalized = String(code ?? "").trim();
+        if (!normalized || normalized === EMPTY_GENERATED_CODE) return;
         const blob = new Blob([code], { type: "text/x-python;charset=utf-8" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");

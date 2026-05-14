@@ -14,7 +14,7 @@
 |------|------|
 | 🧩 **图形化积木编程** | 基于 Blockly，拖拽积木即可生成 Python 代码 |
 | 🍓 **树莓派5专属积木** | GPIO 输出/输入、PWM、舵机、电机、超声波、NeoPixel、I2C、UART |
-| 🐍 **实时 Python 预览** | 积木变化时即时显示对应的 Python 代码 |
+| 🐍 **实时 Python 预览 / 可编辑** | 积木变化时即时显示 Python 代码，也可直接手改；上传运行以当前代码为准 |
 | 🔌 **SSH 一键部署** | 通过 SSH/SFTP 上传并运行脚本，实时显示程序输出 |
 | 🔍 **自动设备发现** | 扫描局域网 SSH 端口，并区分“端口开放设备”和“凭据可登录设备” |
 | 💻 **交互式 SSH 终端** | 在 IDE 内直接建立远程 shell，会话中可输入命令并查看回显 |
@@ -29,9 +29,9 @@
 | 类别 | 库 | 积木数量 |
 |------|----|---------|
 | ⚙ 系统 / 时间 | `time` | 导入、延时(秒/毫秒)、打印、循环 |
-| 💡 GPIO 输出 | `gpiozero` | LED、PWMLED、Buzzer、DigitalOutputDevice |
-| 🔘 GPIO 输入 | `gpiozero` | Button、DigitalInputDevice、超声波(HC-SR04) |
-| ⚡ PWM / 舵机 / 电机 | `gpiozero` | AngularServo、Motor、PWMOutputDevice |
+| 💡 GPIO 输出 | `gpiozero` / `pigpio` | LED、PWMLED、Buzzer、DigitalOutputDevice、`close()` |
+| 🔘 GPIO 输入 | `gpiozero` / `pigpio` | Button、DigitalInputDevice、超声波(HC-SR04)、`close()` |
+| ⚡ PWM / 舵机 / 电机 | `gpiozero` / `pigpio` | AngularServo、Motor、PWMOutputDevice、`close()` |
 | 🌈 LED 灯带 | `rpi_ws281x` | NeoPixel 颜色、彩虹、清除 |
 | 🔗 I2C | `smbus2` | 打开总线、读/写字节 |
 | 📡 UART | `pyserial` | 打开串口、发送、读取 |
@@ -77,7 +77,7 @@ npm run pack
 sudo apt update && sudo apt upgrade -y
 
 # 安装 Python 依赖
-pip3 install gpiozero rpi_ws281x smbus2 pyserial RPi.GPIO
+pip3 install gpiozero pigpio rpi_ws281x smbus2 pyserial RPi.GPIO
 
 # 启用 I2C 接口（如需 I2C 功能）
 sudo raspi-config nonint do_i2c 0
@@ -99,6 +99,21 @@ sudo usermod -aG gpio $USER
 > ```bash
 > sudo apt install python3-lgpio
 > ```
+
+如果你希望在 GPIO / PWM / 舵机场景中改用 `pigpio` 后端，请继续安装并启动 `pigpio` 守护进程：
+
+```bash
+sudo apt install pigpio python3-pigpio
+sudo systemctl enable pigpiod
+sudo systemctl start pigpiod
+```
+
+然后在 IDE 的积木中使用“`GPIO 后端 -> pigpio`”块即可生成：
+
+```python
+from gpiozero.pins.pigpio import PiGPIOFactory
+Device.pin_factory = PiGPIOFactory()
+```
 
 ### 4. 启用 SSH
 
@@ -194,6 +209,7 @@ Windows IDE
 
 - 手动输入树莓派 IP、用户名、密码
 - 显示动态上传目标路径：`/home/<username>/carbot/main.py`
+- Python 代码面板支持直接编辑；手动修改后，上传和运行都会以当前代码为准
 - 自动发现并列出局域网 SSH 设备
 - 一键上传脚本并运行
 - 连接交互式 SSH 终端，直接输入命令

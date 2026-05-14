@@ -11,6 +11,7 @@ const ANSI_CSI_REGEX = /\u001B\[[0-?]*[ -/]*[@-~]/g;
 const ANSI_OSC_REGEX = /\u001B\][^\u0007\u001B]*(?:\u0007|\u001B\\)/g;
 const ANSI_SINGLE_ESCAPE_REGEX = /\u001B[@-_]/g;
 const OTHER_CONTROL_REGEX = /[\u0000-\u0008\u000B-\u001A\u001C-\u001F\u007F]/g;
+const EMPTY_GENERATED_CODE = "# 拖拽积木块开始编程...";
 
 function getRemoteScriptPath(username) {
     return `/home/${username}/carbot/main.py`;
@@ -24,6 +25,11 @@ function normalizeConsoleText(text) {
         .replace(ANSI_CSI_REGEX, "")
         .replace(ANSI_SINGLE_ESCAPE_REGEX, "")
         .replace(OTHER_CONTROL_REGEX, "");
+}
+
+function isUploadableCode(text) {
+    const normalized = String(text ?? "").trim();
+    return normalized !== "" && normalized !== EMPTY_GENERATED_CODE;
 }
 
 /**
@@ -145,8 +151,8 @@ export default function ConnectionPanel({ code, onStatusChange }) {
     // --- 上传脚本 ---
     const upload = async () => {
         if (!ip) { appendLog("请先填写树莓派 IP 地址", "error"); return; }
-        if (!code || code.trim() === "" || code.startsWith("# 拖拽")) {
-            appendLog("请先在积木区编写程序", "error");
+        if (!isUploadableCode(code)) {
+            appendLog("请先编写或粘贴 Python 代码", "error");
             return;
         }
         if (!window.electronAPI?.sshUploadScript) {

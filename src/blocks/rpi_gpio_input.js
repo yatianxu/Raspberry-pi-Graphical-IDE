@@ -10,6 +10,11 @@ const BCM_PINS = Array.from({ length: 26 }, (_, i) => {
     return [`GPIO ${pin}`, String(pin)];
 });
 
+function ensureGpiozeroImports() {
+    pythonGenerator.definitions_["import_gpiozero"] =
+        "from gpiozero import LED, PWMLED, Button, Buzzer, AngularServo, Motor, DistanceSensor, DigitalOutputDevice, DigitalInputDevice, Device";
+}
+
 Blockly.common.defineBlocksWithJsonArray([
     // --- Button 创建
     {
@@ -143,6 +148,7 @@ pythonGenerator.forBlock["rpi_button_create"] = function (block) {
     const pin = block.getFieldValue("PIN");
     const varName = block.getFieldValue("VAR");
     const pull = block.getFieldValue("PULL");
+    ensureGpiozeroImports();
     return `${varName} = Button(${pin}, pull_up=${pull})\n`;
 };
 
@@ -166,6 +172,7 @@ pythonGenerator.forBlock["rpi_digital_input_create"] = function (block) {
     const pin = block.getFieldValue("PIN");
     const varName = block.getFieldValue("VAR");
     const pull = block.getFieldValue("PULL");
+    ensureGpiozeroImports();
     return `${varName} = DigitalInputDevice(${pin}, pull_up=${pull})\n`;
 };
 
@@ -178,8 +185,7 @@ pythonGenerator.forBlock["rpi_ultrasonic_create"] = function (block) {
     const trig = block.getFieldValue("TRIG");
     const echo = block.getFieldValue("ECHO");
     const varName = block.getFieldValue("VAR");
-    pythonGenerator.definitions_["import_ultrasonic"] =
-        "from gpiozero import DistanceSensor";
+    ensureGpiozeroImports();
     return `${varName} = DistanceSensor(echo=${echo}, trigger=${trig})\n`;
 };
 

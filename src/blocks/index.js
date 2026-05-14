@@ -24,6 +24,8 @@ export const RPI5_TOOLBOX = {
             colour: "#4A90D9",
             contents: [
                 { kind: "block", type: "rpi_import_gpiozero" },
+                { kind: "block", type: "rpi_gpio_backend" },
+                { kind: "block", type: "rpi_gpio_close" },
                 { kind: "block", type: "rpi_import_time" },
                 { kind: "block", type: "rpi_sleep", inputs: { SEC: { block: { type: "math_number", fields: { NUM: 1 } } } } },
                 { kind: "block", type: "rpi_sleep_ms", inputs: { MS: { block: { type: "math_number", fields: { NUM: 500 } } } } },
@@ -65,6 +67,8 @@ export const RPI5_TOOLBOX = {
                 { kind: "separator" },
                 { kind: "block", type: "rpi_digital_output_create" },
                 { kind: "block", type: "rpi_digital_output_ctrl" },
+                { kind: "separator" },
+                { kind: "block", type: "rpi_gpio_close" },
             ],
         },
 
@@ -89,6 +93,8 @@ export const RPI5_TOOLBOX = {
                 { kind: "block", type: "rpi_ultrasonic_create" },
                 { kind: "block", type: "rpi_ultrasonic_distance" },
                 { kind: "block", type: "rpi_ultrasonic_distance_cm" },
+                { kind: "separator" },
+                { kind: "block", type: "rpi_gpio_close" },
             ],
         },
 
@@ -121,6 +127,8 @@ export const RPI5_TOOLBOX = {
                     type: "rpi_pwm_value",
                     inputs: { VALUE: { block: { type: "math_number", fields: { NUM: 0.5 } } } },
                 },
+                { kind: "separator" },
+                { kind: "block", type: "rpi_gpio_close" },
             ],
         },
 

@@ -68,10 +68,29 @@ function buildPreUploadCleanupCommand(remoteScriptPath) {
     "pids=$(ps -ef | grep '[m]ain.py' | awk '{print $2}')",
     "if [ -n \"$pids\" ]; then",
     "  echo \"__RPI_IDE_MAINPY__:busy:$pids\"",
-    "  exit 2",
+    "  exit 0",
     "fi",
     "echo '__RPI_IDE_MAINPY__:clear'",
+    "exit 0",
   ].join("\n");
+}
+
+function parsePreUploadCleanupResult(result) {
+  const combined = `${result?.stdout || ""}\n${result?.stderr || ""}`.trim();
+  const busyMatch = combined.match(/__RPI_IDE_MAINPY__:busy:([^\r\n]+)/);
+  if (busyMatch) {
+    return {
+      ok: false,
+      detail: `main.py 进程仍在运行: ${busyMatch[1].trim()}`,
+    };
+  }
+  if (combined.includes("__RPI_IDE_MAINPY__:clear")) {
+    return { ok: true, detail: "" };
+  }
+  if (combined) {
+    return { ok: false, detail: combined };
+  }
+  return { ok: true, detail: "" };
 }
 
 // ───────────────────────────────────────────────────────────
@@ -377,9 +396,9 @@ ipcMain.handle("ssh-upload-script", async (event, { ip, username, password, code
       15000,
       "上传前停止服务或清理 main.py 进程超时"
     );
-    if (cleanupResult.code !== 0) {
-      const detail = cleanupResult.stdout.trim() || cleanupResult.stderr.trim() || "main.py 进程仍在运行";
-      throw new Error(`上传前清理失败: ${detail}`);
+    const cleanupState = parsePreUploadCleanupResult(cleanupResult);
+    if (!cleanupState.ok) {
+      throw new Error(`上传前清理失败: ${cleanupState.detail}`);
     }
     sendProgress({ status: "preparing", message: "已停止 carbot.service，并确认 main.py 未占用 GPIO" });
 
